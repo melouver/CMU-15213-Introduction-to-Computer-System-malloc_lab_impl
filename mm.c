@@ -6,8 +6,7 @@
  *                                                                            *
  *  ************************************************************************  *
  *                               DOCUMENTATION                                *
- *
- *                                                                              *
+ *                                                                           *
  *  ************************************************************************  *
  *  ** ADVICE FOR STUDENTS. **                                                *
  *  Step 0: Please read the writeup!                                          *
@@ -227,7 +226,6 @@ void free(void *bp)
     write_footer(block, size, false);
 
     coalesce(block);
-
 }
 
 /*
@@ -366,6 +364,7 @@ static block_t *coalesce(block_t * block)
         size += get_size(block_prev);
         write_header(block_prev, size, false);
         write_footer(block_prev, size, false);
+        
         block = block_prev;
     }
 
@@ -393,7 +392,6 @@ static void place(block_t *block, size_t asize)
 
     if ((csize - asize) >= min_block_size)
     {
-        
         block_t *block_next;
         write_header(block, asize, true);
         write_footer(block, asize, true);
@@ -613,12 +611,11 @@ bool mm_checkheap(int lineno)
 
         if (hdr != ftr) {
             printf(
-                    "Header (0x%016lX) != footer (0x%016lX)\n",
-                    hdr, ftr
+                    "Header (0x%016lX) != footer (0x%016lX) at %p\n",
+                    hdr, ftr, curr
                   );
             return false;
         }
-
         curr = next;
     }
 
