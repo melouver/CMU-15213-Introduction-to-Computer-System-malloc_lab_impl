@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <assert.h>
@@ -47,7 +48,7 @@
  */
 
 //#define DEBUG // uncomment this line to enable debugging
-
+#define BESTFIT
 #ifdef DEBUG
 /* When debugging is enabled, these form aliases to useful functions */
 #define dbg_printf(...) printf(__VA_ARGS__)
@@ -437,7 +438,26 @@ static void place(block_t *block, size_t asize)
 static block_t *find_fit(size_t asize)
 {
   block_t *block;
-
+#ifdef BESTFIT
+  unsigned long delta = ULONG_MAX;
+  block_t *res = NULL;
+  for (block = free_list_start; get_alloc(block) == false ;
+       block = get_free_next(block))
+    {
+      if (!(get_alloc(block)) && (asize <= get_size(block)))
+        {
+          if (get_size(block)-asize < delta) {
+            delta = get_size(block)-asize;
+            res = block;
+            double internal_frag_rate = ((double)delta) / asize;
+            if (internal_frag_rate < 0.2) {
+              return res;
+            }
+          }
+        }
+    }
+  return res;
+#endif
   for (block = free_list_start; get_alloc(block) == false ;
        block = get_free_next(block))
     {
