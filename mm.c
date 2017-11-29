@@ -655,14 +655,6 @@ static void remove_from_free_list(block_t *block) {
   block_t *next = get_free_next(block);
   block_t *prev = get_free_prev(block);
   
-  /* if (prev) { */
-  /*   prev->next = block->next; */
-  /* } else { */
-  /*   free_list_start = block->next; */
-  /* } */
-  
-  /* next->prev = prev; */
-  
   if (free_list_start == block) {
     free_list_start = next;
   }
@@ -672,10 +664,17 @@ static void remove_from_free_list(block_t *block) {
 }
 
 static void insert_in_free_list(block_t *block) {
+
+
   block_t *p = free_list_start;
-  while (p < block && !get_alloc(p)) {
-    p = get_free_next(p);
+  if (block > heap_listp->prev) {
+    p = heap_listp;
+  } else {
+    while (p < block && !get_alloc(p)) {
+      p = get_free_next(p);
+    }
   }
+
   if (p == free_list_start) {
     // insert before head
     free_list_start = block;
