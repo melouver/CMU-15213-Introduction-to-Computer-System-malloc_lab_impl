@@ -52,7 +52,7 @@
 /* When debugging is enabled, these form aliases to useful functions */
 #define dbg_printf(...) printf(__VA_ARGS__)
 #define dbg_requires(...) assert(__VA_ARGS__)
-#define dbg_assert(...) assert(__VA_ARGS__)
+#define dbg_dengassert(...) assert(__VA_ARGS__)
 #define dbg_ensures(...) assert(__VA_ARGS__)
 #else
 /* When debugging is disnabled, no code gets generated for these */
@@ -603,7 +603,7 @@ static void *header_to_payload(block_t *block)
  */
 bool mm_checkheap(int lineno)
 {
-
+#ifdef DEBUG
   if (!heap_listp) {
     printf("NULL heap list pointer!\n");
     return false;
@@ -626,7 +626,9 @@ bool mm_checkheap(int lineno)
     }
     curr = next;
   }
+#endif
   return true;
+
 }
 static void print_heap() {
   block_t *p = NULL;
@@ -662,8 +664,19 @@ static void remove_from_free_list(block_t *block) {
 }
 
 static void insert_in_free_list(block_t *block) {
-  block->next = free_list_start;
-  free_list_start->prev = block;
-  block->prev = NULL;
-  free_list_start = block;
+  block_t *p = free_list_start;
+  while (p < block && !get_alloc(p)) {
+    p = get_free_next(p);
+  }
+  if (p == free_list_start) {
+    // insert before head
+    free_list_start = block;
+  }
+  block->next = p;
+  block->prev = p->prev;
+  if (block->prev != NULL) {
+    block->prev->next = block;
+  }
+  p->prev = block;
+  free_list_start->prev = NULL;
 }
