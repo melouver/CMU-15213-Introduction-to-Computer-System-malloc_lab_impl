@@ -1,3 +1,9 @@
+*This My solution for malloc lab.Using explicit free list , FIFO and best fit policy , we got util=60% throughput=14000Kops/s
+with standard throughput 15000.
+Optimization:
+For the Best fit, when we meet a block with internal fragment rate lower than 0.2, then we think it is A best fit block and just return
+it.This avoids linear search time in a linked-list.*
+
 #############################
 # CS:APP Malloc Lab
 # Handout files for students
