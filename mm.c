@@ -150,8 +150,8 @@ bool mm_init(void)
     
   start[0] = pack(0, false); // Prologue footer
   start[1] = pack(2*dsize, true); // Epilogue header
-  start[2] = pack(0, false);
-  start[3] = pack(0, false);
+  start[2] = pack((unsigned long)(start+1), false);
+  start[3] = pack((unsigned long)(start+1), false);
   start[4] = pack(2*dsize, true);
   start[5] = pack(0, false);
 
@@ -654,13 +654,21 @@ static void remove_from_free_list(block_t *block) {
 
   block_t *next = get_free_next(block);
   block_t *prev = get_free_prev(block);
-
-  if (prev) {
-    prev->next = block->next;
-  } else {
-    free_list_start = block->next;
+  
+  /* if (prev) { */
+  /*   prev->next = block->next; */
+  /* } else { */
+  /*   free_list_start = block->next; */
+  /* } */
+  
+  /* next->prev = prev; */
+  
+  if (free_list_start == block) {
+    free_list_start = next;
   }
   next->prev = prev;
+  prev->next = next;
+  
 }
 
 static void insert_in_free_list(block_t *block) {
@@ -678,5 +686,5 @@ static void insert_in_free_list(block_t *block) {
     block->prev->next = block;
   }
   p->prev = block;
-  free_list_start->prev = NULL;
+  free_list_start->prev = heap_listp;
 }
