@@ -1,0 +1,3 @@
+Intel(R)Core(TM)i5-6200UCPU@2.30GHz:checkpoint:15000
+Intel(R)Core(TM)i5-6200UCPU@2.30GHz:regular:15000
+
