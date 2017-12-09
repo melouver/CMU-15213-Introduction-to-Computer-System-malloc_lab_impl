@@ -67,12 +67,11 @@
 typedef uint64_t word_t;
 static const size_t wsize = sizeof(word_t);   // word and header size (bytes)
 static const size_t dsize = 2*wsize;          // double word size (bytes)
-static const size_t min_block_size = 2*dsize; // Minimum block size
+static const size_t min_block_size = 2*dsize; // Minimum block size : 32bytes
 static const size_t chunksize = (1 << 12);    // requires (chunksize % 16 == 0)
 
 static const word_t alloc_mask = 0x1;
 static const word_t size_mask = ~(word_t)0xF;
-static bool called_by_free = false;
 
 typedef struct block
 {
@@ -242,9 +241,7 @@ void free(void *bp)
   write_footer(block, size, false);
   
   //coalesce(block); wrong code! Coalesce is used for block already in free list
-  called_by_free = true;
   coalesce(block);
-  called_by_free = false;
   dbg_printf("Free size %zd on address %p\n.", size, bp);
   dbg_ensures(mm_checkheap(__LINE__));
 }
@@ -261,7 +258,7 @@ void *realloc(void *ptr, size_t size)
 {
   block_t *block = payload_to_header(ptr);
   size_t copysize;
-  void *newptr;
+  void *newptr = NULL;
 
   // If size == 0, then free block and return NULL
   if (size == 0)
@@ -275,27 +272,58 @@ void *realloc(void *ptr, size_t size)
     {
       return malloc(size);
     }
+  
+  /* // Otherwise, proceed with reallocation */
+  /* newptr = malloc(size); */
+  /* // If malloc fails, the original block is left untouched */
+  /* if (!newptr) */
+  /*   { */
+  /*     return NULL; */
+  /*   } */
 
-  // Otherwise, proceed with reallocation
-  newptr = malloc(size);
-  // If malloc fails, the original block is left untouched
-  if (!newptr)
-    {
+  /* // Copy the old data */
+  /* copysize = get_payload_size(block); // gets size of old payload */
+  /* if(size < copysize) */
+  /*   { */
+  /*     copysize = size; */
+  /*   } */
+  /* memcpy(newptr, ptr, copysize); */
+
+  /* // Free the old block */
+  /* free(ptr); */
+  size_t oldsize = get_size(block);
+  size_t newsize = round_up(size, dsize) + dsize;
+
+  if (0) {
+    if ((oldsize - newsize) > min_block_size) {
+      write_header(block, newsize, true);
+      write_footer(block, newsize, true);
+      block_t *nextblock = find_next(block);
+      if ((newsize % dsize)||(oldsize%dsize)) {
+        printf("new %lu, old %lu\n", newsize, oldsize);
+        printf("LYZ ERROR !! ALIGNMENT!!\n");
+      }
+      write_header(nextblock, oldsize-newsize, false);
+      write_footer(nextblock, oldsize-newsize, false);
+      //insert_in_free_list(nextblock);
+      coalesce(nextblock);
+      return ptr;
+    }
+  } else {
+    // re malloc and memcpy
+    newptr = malloc(size);
+    if (!newptr) {
       return NULL;
     }
-
-  // Copy the old data
-  copysize = get_payload_size(block); // gets size of old payload
-  if(size < copysize)
-    {
+    copysize = get_payload_size(block);
+    if (size < copysize) {
       copysize = size;
     }
-  memcpy(newptr, ptr, copysize);
-
-  // Free the old block
-  free(ptr);
-
-  return newptr;
+    memcpy(newptr, ptr, copysize);
+    free(ptr);
+    return newptr;
+  }
+  return ptr;
 }
 
 /*
@@ -632,7 +660,6 @@ bool mm_checkheap(int lineno)
   block_t *curr = heap_listp;
   block_t *next;
   block_t *hi = mem_heap_hi();
-  print_heap();
   while ((next = find_next(curr)) + 1 < hi) {
     word_t hdr = curr->header;
     word_t ftr = *find_prev_footer(next);
