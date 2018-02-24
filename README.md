@@ -11,7 +11,29 @@ it.This avoids linear search time in a linked-list.
 使用segregated free list来管理空闲块，使用first fit来进行空闲块search，有论文表明，在segregated free list上进行first fit，其最终的空间利用率接近于使用best fit。
 
 
+
+
+
+
+
+
+
+
+
+
 ------------------- BELOW ARE ORIGINAL README OF MALLOC LAB ----------------------
+
+
+
+
+
+
+
+
+
+
+
+
 #############################
  CS:APP Malloc Lab
  Handout files for students
