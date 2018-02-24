@@ -1,4 +1,4 @@
-* Malloc lab  *
+# Malloc lab 
 This is  my solution for malloc lab.Using explicit free list , FIFO and best fit policy , we got util=60% throughput=14000Kops/s
 with standard throughput 15000.
 Optimization:
