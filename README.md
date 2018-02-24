@@ -13,8 +13,8 @@ it.This avoids linear search time in a linked-list.
 
 ------------------- BELOW ARE ORIGINAL README OF MALLOC LAB ----------------------
 #############################
-# CS:APP Malloc Lab
-# Handout files for students
+ CS:APP Malloc Lab
+ Handout files for students
 #############################
 
 ***********
